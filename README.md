@@ -48,8 +48,7 @@ Explore the code and learn from it! You can find detailed information about each
 
 Feel free to reach out if you have any questions or want to discuss my projects:
 
-- **Email:** your.email@example.com
-- **LinkedIn:** Your LinkedIn Profile
+- **Email:** hashimazizm@gmail.com
 
 Thank you for visiting my portfolio. Happy coding!
 
