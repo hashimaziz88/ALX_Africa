@@ -54,26 +54,3 @@ Feel free to reach out if you have any questions or want to discuss my projects:
 Thank you for visiting my portfolio. Happy coding!
 
 ---
-
-# ALX Africa
-
-## ALX Foundations
-
-Before diving into backend development, I completed an 8-week foundational training focusing on essential skills for success in tech. This training covered:
-
-- Leading Self and Others
-- Communicating for Impact
-- Problem Solving and Critical Thinking
-- Managing Complex Tasks
-- Tech Skills Essentials
-
-## Backend Web Development
-
-Throughout the backend web development specialization, I delved into the intricacies of backend programming, utilizing Python and Django to build robust web applications. Key topics covered include:
-
-- Backend Language: Python
-- Web Framework: Django
-- Database Management: SQL (MySQL) and NoSQL (MongoDB)
-- API Development: REST API, Authentication, and other backend concepts
-
-Thank you for visiting my portfolio. Happy coding!
