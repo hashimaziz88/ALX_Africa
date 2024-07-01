@@ -6,10 +6,11 @@ from weather import fetch_weather
 # Load environment variables from .env file
 load_dotenv()
 
+
 def main():
     # Fetch weather information
-    api_key = os.getenv('OPENWEATHERMAP_API_KEY')
-    city = 'Haifa'  # Replace with the city you want to fetch weather for
+    api_key = os.getenv("OPENWEATHERMAP_API_KEY")
+    city = "London"  # Replace with the city you want to fetch weather for
 
     weather_info = fetch_weather(api_key, city)
     if weather_info:
@@ -18,6 +19,7 @@ def main():
         print(f"Description: {weather_info['description']}")
     else:
         print("Failed to fetch weather information.")
+
 
 if __name__ == "__main__":
     main()
