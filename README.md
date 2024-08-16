@@ -18,7 +18,9 @@ Before diving into backend development, I completed an 8-week foundational train
 - Managing Complex Tasks
 - Tech Skills Essentials
   
-![52-professional-foundations-certificate-hashim-aziz-muhammad](https://github.com/user-attachments/assets/76fca964-0399-41f3-9995-10b5351be97e)
+[![52-professional-foundations-certificate-hashim-aziz-muhammad](https://github.com/user-attachments/assets/76fca964-0399-41f3-9995-10b5351be97e)](https://intranet.alxswe.com/certificates/SMczRXyTEC)
+
+
 
 **Backend Web Development:**
 
