@@ -1,7 +1,13 @@
 # Ignore all JetBrains IDE files
-
+/.venv
+*/.venv/
 # Directory-based project format
 .idea/
+virtualdjango/
+myenv/
+# Alternatively, to ignore any virtual environments in your project
+*/virtualdjango/
+*/myenv/
 
 # File-based project format
 *.iws
