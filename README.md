@@ -28,7 +28,7 @@ Throughout the backend web development specialization, I delved into the intrica
 
 - Backend Language: Python
 - Web Framework: Django
-- Database Management: SQL (MySQL) and NoSQL (MongoDB)
+- Database Management: SQL (MySQL, SQLite) and NoSQL (MongoDB)
 - API Development: REST API, Authentication, and other backend concepts
 
 ### Capstone Projects:
