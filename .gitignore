@@ -1,4 +1,8 @@
 # Ignore all JetBrains IDE files
+\.venv
+\virtualdjango
+\myenv
+\.
 /.venv
 */.venv/
 # Directory-based project format
