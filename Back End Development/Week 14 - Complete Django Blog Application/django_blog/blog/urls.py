@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from .views import views
 from .views import PostListView, PostDetailView, PostCreateView, PostUpdateView, PostDeleteView
 from .views import CommentCreateView, CommentUpdateView, CommentDeleteView
 from .views import search_posts, posts_by_tag

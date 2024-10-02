@@ -1,0 +1,35 @@
+<!-- templates/home.html  -->
+{% extends 'base.html' %} {% block content %}
+<h1>Welcome to Movie Review API</h1>
+<p>
+  This is a platform where you can share your thoughts on movies and read
+  reviews from other users.
+</p>
+{% if user.is_authenticated %}
+<p>
+  Hello, {{ user.username }}!
+  <a href="{% url 'review-create' %}">Write a review</a> or
+  <a href="{% url 'review-list' %}">browse existing reviews</a>.
+</p>
+{% else %}
+<p>
+  <a href="{% url 'login' %}">Login</a> or
+  <a href="{% url 'register' %}">Register</a> to start writing reviews.
+</p>
+{% endif %}
+
+<h2>Latest Reviews</h2>
+{% for review in latest_reviews %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ review.movie_title }}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">Rating: {{ review.rating }}/5</h6>
+    <p class="card-text">{{ review.review_content|truncatewords:30 }}</p>
+    <a href="{% url 'review-detail' review.pk %}" class="card-link"
+      >Read more</a
+    >
+  </div>
+</div>
+{% empty %}
+<p>No reviews yet.</p>
+{% endfor %} {% endblock %}

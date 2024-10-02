@@ -24,6 +24,9 @@ from taggit.models import Tag
 from django.views.generic import ListView
 from taggit.models import Tag
 from .models import Post
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from .models import Post
 
 class PostByTagListView(ListView):
     model = Post
@@ -140,9 +143,7 @@ class PostCreateView(CreateView):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Post
+
 
 # Post Update View
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

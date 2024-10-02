@@ -1,0 +1,48 @@
+<!-- # templates/review_detail.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ review.movie_title }}</h2>
+<p><strong>Rating:</strong> {{ review.rating }}/5</p>
+<p><strong>Reviewed by:</strong> {{ review.user.username }}</p>
+<p><strong>Date:</strong> {{ review.created_date }}</p>
+<p>{{ review.review_content }}</p>
+
+<p>
+    <strong>Likes:</strong> {{ review.likes.count }}
+    {% if user.is_authenticated %}
+        <form action="{% url 'like-review' review.pk %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-primary">
+                {% if user in review.likes.all %}Unlike{% else %}Like{% endif %}
+            </button>
+        </form>
+    {% endif %}
+</p>
+
+{% if user == review.user %}
+    <a href="{% url 'review-update' review.pk %}" class="btn btn-primary">Edit</a>
+    <a href="{% url 'review-delete' review.pk %}" class="btn btn-danger">Delete</a>
+{% endif %}
+
+<h3>Comments</h3>
+{% for comment in review.comments.all %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <p class="card-text">{{ comment.content }}</p>
+            <p class="card-text"><small class="text-muted">By {{ comment.user.username }} on {{ comment.created_date }}</small></p>
+        </div>
+    </div>
+{% empty %}
+    <p>No comments yet.</p>
+{% endfor %}
+
+{% if user.is_authenticated %}
+    <h4>Add a comment</h4>
+    <form method="post" action="{% url 'add-comment' review.pk %}">
+        {% csrf_token %}
+        {{ comment_form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endif %}
+{% endblock %}

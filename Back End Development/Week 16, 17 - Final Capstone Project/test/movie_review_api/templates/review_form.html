@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{% if form.instance.pk %}Edit Review{% else %}New Review{% endif %}</h2 %>
+
+{% if movie_details %}
+    <h3>Movie: {{ movie_details.Title }}</h3>
+    <p><strong>Year:</strong> {{ movie_details.Year }}</p>
+    <img src="{{ movie_details.Poster }}" alt="{{ movie_details.Title }} Poster" style="width: 100px">
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

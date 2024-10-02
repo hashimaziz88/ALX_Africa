@@ -1,0 +1,7 @@
+Django==3.2.7
+djangorestframework==3.12.4
+gunicorn==20.1.0
+psycopg2-binary==2.9.1
+django-filter==2.4.0
+djangorestframework-simplejwt==4.8.0
+requests==2.26.0

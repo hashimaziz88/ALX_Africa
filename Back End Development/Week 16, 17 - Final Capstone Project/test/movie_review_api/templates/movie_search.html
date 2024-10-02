@@ -1,0 +1,22 @@
+{% extends 'base.html' %} {% block content %}
+<h2>Movie Search Results</h2>
+{% for movie in movies %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ movie.Title }}</h5>
+    <p class="card-text"><strong>Year:</strong> {{ movie.Year }}</p>
+    <img
+      src="{{ movie.Poster }}"
+      alt="{{ movie.Title }} Poster"
+      style="width: 100px"
+    />
+    <a
+      href="{% url 'review-create' %}?movie_title={{ movie.Title }}"
+      class="btn btn-primary"
+      >Add Review</a
+    >
+  </div>
+</div>
+{% empty %}
+<p>No movies found.</p>
+{% endfor %} {% endblock %}

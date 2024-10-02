@@ -1,0 +1,27 @@
+<!-- # templates/user_profile.html -->
+{% extends 'base.html' %} {% block content %}
+<h2>{{ user.username }}'s Profile</h2>
+<form method="post">
+  {% csrf_token %} {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Update Profile</button>
+</form>
+
+<h3>Your Reviews</h3>
+{% for review in reviews %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ review.movie_title }}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">Rating: {{ review.rating }}/5</h6>
+    <p class="card-text">{{ review.review_content|truncatewords:30 }}</p>
+    <a href="{% url 'review-detail' review.pk %}" class="card-link"
+      >Read more</a
+    >
+    <a href="{% url 'review-update' review.pk %}" class="card-link">Edit</a>
+    <a href="{% url 'review-delete' review.pk %}" class="card-link text-danger"
+      >Delete</a
+    >
+  </div>
+</div>
+{% empty %}
+<p>You haven't written any reviews yet.</p>
+{% endfor %} {% endblock %}
