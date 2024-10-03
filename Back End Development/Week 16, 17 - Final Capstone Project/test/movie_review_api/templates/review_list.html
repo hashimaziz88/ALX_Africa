@@ -1,42 +1,53 @@
 {% extends 'base.html' %} {% block content %}
-<h2>
-  Reviews for "{% if movie_title %}{{ movie_title }}{% else %}All Movies {% endif
-  %}"
-</h2>
+<div class="container mt-5">
+  <h2 class="mb-4">
+    Reviews for "{% if movie_title %}{{ movie_title }}{% else %}All Movies{%
+    endif %}"
+  </h2>
 
-<!-- Search Bar -->
-<form method="GET" action="{% url 'review-list' %}" class="mb-4">
-  <div class="input-group">
-    <input
-      type="text"
-      name="search"
-      class="form-control"
-      placeholder="Search reviews..."
-      aria-label="Search reviews"
-      value="{{ request.GET.search }}"
-    />
-    <button class="btn btn-outline-secondary" type="submit">Search</button>
-  </div>
-</form>
+  <!-- Search Bar -->
+  <form method="GET" action="{% url 'review-list' %}" class="mb-4">
+    <div class="input-group">
+      <input
+        type="text"
+        name="search"
+        class="form-control"
+        placeholder="Search reviews..."
+        aria-label="Search reviews"
+        value="{{ request.GET.search }}"
+      />
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+  </form>
 
-<!-- Reviews List -->
-{% if reviews %} {% for review in reviews %}
-<div class="card mb-3">
-  <div class="card-body">
-    <h5 class="card-title">{{ review.movie_title }}</h5>
-    <p><strong>Rating:</strong> {{ review.rating }}/5</p>
-    <p>{{ review.review_content }}</p>
-    <p>
-      <small
-        >Reviewed by {{ review.user.username }} on {{ review.created_date
-        }}</small
-      >
-    </p>
-    <a href="{% url 'review-detail' review.pk %}" class="btn btn-link"
-      >View Details</a
-    >
+  <!-- Reviews List -->
+  {% if reviews %}
+  <div class="row">
+    {% for review in reviews %}
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <img
+            src="{{ review.poster_url }}"
+            alt="{{ review.movie_title }} Poster"
+            style="width: 100px"
+          />
+          <h5 class="card-title">{{ review.movie_title }}</h5>
+          <p><strong>Rating:</strong> {{ review.rating }}/5</p>
+          <p>{{ review.review_content }}</p>
+          <p class="text-muted">
+            Reviewed by {{ review.user.username }} on {{ review.created_date}}
+          </p>
+          <a href="{% url 'review-detail' review.pk %}" class="btn btn-primary"
+            >View Details</a
+          >
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
+  {% else %}
+  <p>No reviews found for this movie.</p>
+  {% endif %} {% endif %}
 </div>
-{% endfor %} {% else %}
-<p>No reviews found for this movie.</p>
-{% endif %}{% endif %} {% endblock %}
+{% endblock %}

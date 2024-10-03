@@ -7,9 +7,10 @@ from .models import Review, Comment, UserProfile
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
-        fields = ['movie_title', 'review_content', 'rating']
+        fields = ['movie_title', 'review_content', 'rating', 'poster_url']
         widgets = {
             'movie_title': forms.TextInput(attrs={'readonly': 'readonly'}),  # Make it read-only to prevent manual editing
+            'poster_url': forms.HiddenInput(),
         }
 
 class CommentForm(forms.ModelForm):

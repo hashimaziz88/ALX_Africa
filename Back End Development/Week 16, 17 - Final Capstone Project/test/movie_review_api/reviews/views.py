@@ -15,10 +15,11 @@ import requests
 from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import render
-from .models import Review
 from django.shortcuts import render
 from django.db import models  # For Q objects
 from .models import Review  # Assuming you have a Review model
+from django.contrib import messages
+
 
 
 def review_list(request):
@@ -49,11 +50,29 @@ def review_list(request):
 def search_movie(request):
     query = request.GET.get('title')
     movie_list = []
+    
     if query:
-        url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&s={query}"
-        response = requests.get(url)
-        if response.status_code == 200:
-            movie_list = response.json().get('Search', [])
+        try:
+            # Construct the OMDb API URL with the search query
+            url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&s={query}"
+            response = requests.get(url)
+            
+            # Check if the request was successful (status code 200)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if the API response contains a valid 'Search' result
+                if 'Search' in data:
+                    movie_list = data['Search']
+                else:
+                    # If there's no 'Search' result, display an appropriate message
+                    messages.warning(request, "No movies found for your search query.")
+            else:
+                # Handle non-200 response codes from the OMDb API
+                messages.error(request, "Failed to fetch data from OMDb. Please try again later.")
+        except requests.exceptions.RequestException as e:
+            # Handle network-related errors (e.g., connection issues)
+            messages.error(request, f"An error occurred: {e}")
     
     return render(request, 'movie_search.html', {'movie_list': movie_list})
 
@@ -110,6 +129,11 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect
 
+from django.shortcuts import redirect
+from django.contrib import messages
+import requests
+from django.conf import settings
+
 class ReviewCreateView(LoginRequiredMixin, CreateView):
     model = Review
     form_class = ReviewForm
@@ -125,35 +149,37 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
             url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&t={movie_title}"
             response = requests.get(url)
             if response.status_code == 200:
-                context['movie_details'] = response.json()
+                movie_details = response.json()
+                context['movie_details'] = movie_details
                 context['form'].initial['movie_title'] = movie_title
+                # Set the initial poster_url in the form
+                context['form'].initial['poster_url'] = movie_details.get('Poster')  # Pass the poster URL
         
         return context
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         form.instance.movie_title = self.request.GET.get('movie_title')
-        return super().form_valid(form)
 
-    def get(self, request, *args, **kwargs):
-        movie_title = request.GET.get('movie_title')
-        if not movie_title:
-            messages.warning(request, 'Please search and select a movie before writing a review.')
-            return redirect('search-movie')  # Redirect to your search view
-        return super().get(request, *args, **kwargs)
-
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.movie_title = self.request.GET.get('movie_title')  # Save the movie title from the query
+        # Fetch movie details again to save poster_url
+        movie_title = form.instance.movie_title
+        if movie_title:
+            url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&t={movie_title}"
+            response = requests.get(url)
+            if response.status_code == 200:
+                movie_details = response.json()
+                form.instance.poster_url = movie_details.get('Poster')  # Save the poster URL
+        
         return super().form_valid(form)
 
     def get(self, request, *args, **kwargs):
         # Ensure that movie title is provided, otherwise redirect to search
         movie_title = request.GET.get('movie_title')
         if not movie_title:
+            messages.warning(request, 'Please search and select a movie before writing a review.')
             return redirect('search-movie')  # Redirect to your search view
         return super().get(request, *args, **kwargs)
+
 
 class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Review
@@ -167,11 +193,13 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Review
+    template_name = 'reviews/review_confirm_delete.html'  # Ensures the correct template is used
     success_url = reverse_lazy('review-list')
 
     def test_func(self):
         review = self.get_object()
         return self.request.user == review.user
+
 
 @login_required
 def add_comment(request, pk):

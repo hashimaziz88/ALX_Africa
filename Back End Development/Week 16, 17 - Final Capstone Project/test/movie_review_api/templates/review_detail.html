@@ -2,6 +2,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<img src="{{ review.poster_url }}" alt="{{ review.movie_title }} Poster" style="width: 100px">
+
 <h2>{{ review.movie_title }}</h2>
 <p><strong>Rating:</strong> {{ review.rating }}/5</p>
 <p><strong>Reviewed by:</strong> {{ review.user.username }}</p>

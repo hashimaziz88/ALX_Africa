@@ -10,6 +10,7 @@ class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_date = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(User, related_name='liked_reviews', blank=True)
+    poster_url = models.URLField(max_length=500, blank=True, null=True)  # Add this line
 
     def __str__(self):
         return f"{self.movie_title} - {self.user.username}"
