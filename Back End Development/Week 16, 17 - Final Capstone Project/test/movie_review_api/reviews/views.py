@@ -16,24 +16,35 @@ from django.shortcuts import render
 from django.conf import settings
 from django.shortcuts import render
 from .models import Review
+from django.shortcuts import render
+from django.db import models  # For Q objects
+from .models import Review  # Assuming you have a Review model
+
 
 def review_list(request):
-    # Assuming you're retrieving the movie title somehow
     movie_title = request.GET.get('movie_title', '')  
     search_query = request.GET.get('search', '')
 
-    # Filter reviews by movie title (or however you're determining which movie's reviews to show)
-    reviews = Review.objects.filter(movie_title__icontains=movie_title)
+    # Filter reviews by movie title and search query
+    reviews = Review.objects.all()
 
-    # Add search functionality if applicable
+    # If a movie title is provided, filter by it
+    if movie_title:
+        reviews = reviews.filter(movie_title__icontains=movie_title)
+
+    # If a search query is provided, filter by both movie title and review content
     if search_query:
-        reviews = reviews.filter(review_content__icontains=search_query)
+        reviews = reviews.filter(
+            models.Q(movie_title__icontains=search_query) |  # Search in movie title
+            models.Q(review_content__icontains=search_query)  # Search in review content
+        )
 
     context = {
         'movie_title': movie_title,
         'reviews': reviews,
     }
     return render(request, 'review_list.html', context)
+
 
 def search_movie(request):
     query = request.GET.get('title')

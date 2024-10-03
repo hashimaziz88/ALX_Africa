@@ -1,5 +1,8 @@
 {% extends 'base.html' %} {% block content %}
-<h2>Reviews for "{{ movie_title }}"</h2>
+<h2>
+  Reviews for "{% if movie_title %}{{ movie_title }}{% else %}All Movies {% endif
+  %}"
+</h2>
 
 <!-- Search Bar -->
 <form method="GET" action="{% url 'review-list' %}" class="mb-4">
@@ -25,8 +28,8 @@
     <p>{{ review.review_content }}</p>
     <p>
       <small
-        >Reviewed by {{ review.user.username }} on {{
-        review.created_date}}</small
+        >Reviewed by {{ review.user.username }} on {{ review.created_date
+        }}</small
       >
     </p>
     <a href="{% url 'review-detail' review.pk %}" class="btn btn-link"
@@ -36,4 +39,4 @@
 </div>
 {% endfor %} {% else %}
 <p>No reviews found for this movie.</p>
-{% endif %} {% endblock %}
+{% endif %}{% endif %} {% endblock %}
