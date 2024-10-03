@@ -19,6 +19,11 @@ from django.shortcuts import render
 from django.db import models  # For Q objects
 from .models import Review  # Assuming you have a Review model
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import UserProfileForm
+from .models import UserProfile
 
 
 
@@ -247,3 +252,20 @@ def movie_recommendations(request):
             movies_with_info.append(movie_info)
     
     return render(request, 'movie_recommendations.html', {'recommended_movies': movies_with_info})
+
+@login_required
+def edit_user_profile(request):
+    user_profile = UserProfile.objects.get(user=request.user)  # Get the user's profile
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=user_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('user-profile')  # Redirect to the profile view
+    else:
+        form = UserProfileForm(instance=user_profile)
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'edit_user_profile.html', context)

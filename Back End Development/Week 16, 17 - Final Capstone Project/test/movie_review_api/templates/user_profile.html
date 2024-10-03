@@ -1,27 +1,68 @@
-<!-- # templates/user_profile.html -->
 {% extends 'base.html' %} {% block content %}
 <h2>{{ user.username }}'s Profile</h2>
-<form method="post">
-  {% csrf_token %} {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Update Profile</button>
-</form>
+
+<!-- Profile Information Display -->
+<div class="mb-4">
+  <h5>Bio:</h5>
+  <p>{{ user.userprofile.bio|default:"No bio available." }}</p>
+
+  <h5>Favorite Genres:</h5>
+  <p>
+    {{ user.userprofile.favorite_genres|default:"No favorite genres specified."
+    }}
+  </p>
+</div>
+
+<!-- Message Display -->
+{% if messages %}
+<div class="alert alert-info mt-3">
+  {% for message in messages %}
+  <p>{{ message }}</p>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Link to Edit Profile -->
+<div class="mb-3">
+  <a href="{% url 'profile-edit' %}" class="btn btn-primary">Edit Profile</a>
+</div>
 
 <h3>Your Reviews</h3>
-{% for review in reviews %}
-<div class="card mb-3">
-  <div class="card-body">
-    <h5 class="card-title">{{ review.movie_title }}</h5>
-    <h6 class="card-subtitle mb-2 text-muted">Rating: {{ review.rating }}/5</h6>
-    <p class="card-text">{{ review.review_content|truncatewords:30 }}</p>
-    <a href="{% url 'review-detail' review.pk %}" class="card-link"
-      >Read more</a
-    >
-    <a href="{% url 'review-update' review.pk %}" class="card-link">Edit</a>
-    <a href="{% url 'review-delete' review.pk %}" class="card-link text-danger"
-      >Delete</a
-    >
+<div class="row">
+  {% if reviews %} {% for review in reviews %}
+  <div class="col-md-6 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <img
+          src="{{ review.poster_url }}"
+          alt="{{ review.movie_title }} Poster"
+          style="width: 100px"
+        />
+        <h5 class="card-title">{{ review.movie_title }}</h5>
+        <h6 class="card-subtitle text-muted">Rating: {{ review.rating }}/5</h6>
+        <p class="card-text mt-3">
+          {{ review.review_content|truncatewords:30 }}
+        </p>
+        <a
+          href="{% url 'review-detail' review.pk %}"
+          class="btn btn-sm btn-primary"
+          >Read more</a
+        >
+        <a
+          href="{% url 'review-update' review.pk %}"
+          class="btn btn-sm btn-secondary"
+          >Edit</a
+        >
+        <a
+          href="{% url 'review-delete' review.pk %}"
+          class="btn btn-sm btn-danger"
+          >Delete</a
+        >
+      </div>
+    </div>
   </div>
+  {% endfor %} {% else %}
+  <p>You haven't written any reviews yet.</p>
+  {% endif %}
 </div>
-{% empty %}
-<p>You haven't written any reviews yet.</p>
-{% endfor %} {% endblock %}
+{% endblock %}

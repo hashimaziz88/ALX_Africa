@@ -1,4 +1,3 @@
-<!-- movie_search.html -->
 {% extends 'base.html' %} {% block content %}
 <h2>Search for a Movie</h2>
 
@@ -20,19 +19,23 @@
 <ul class="list-group">
   {% for movie in movie_list %}
   <li class="list-group-item d-flex justify-content-between align-items-center">
-    <a href="{% url 'review-create' %}?movie_title={{ movie.Title }}">
+    <div class="d-flex align-items-center">
+      <img
+        src="{{ movie.Poster }}"
+        alt="{{ movie.Title }} Poster"
+        style="width: 50px; height: auto"
+        class="me-2"
+      />
       <strong>{{ movie.Title }}</strong> ({{ movie.Year }})
-    </a>
-    <img
-      src="{{ movie.Poster }}"
-      alt="{{ movie.Title }} Poster"
-      style="width: 50px; height: auto"
-      class="ms-2"
-    />
+    </div>
+    <a
+      href="{% url 'review-create' %}?movie_title={{ movie.Title }}"
+      class="btn btn-primary btn-sm"
+      >Add Review</a
+    >
   </li>
   {% endfor %}
 </ul>
 {% else %}
 <p>No movies found. Please try a different title.</p>
 {% endif %} {% endblock %}
- 

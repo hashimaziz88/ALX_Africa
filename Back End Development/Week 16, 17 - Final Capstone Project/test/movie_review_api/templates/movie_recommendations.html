@@ -1,19 +1,16 @@
-# templates/movie_recommendations.html
-{% extends 'base.html' %}
-
-{% block content %}
+<!-- # templates/movie_recommendations.html -->
+{% extends 'base.html' %} {% block content %}
 <h2>Movie Recommendations</h2>
 {% for movie in recommended_movies %}
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">{{ movie.Title }}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">{{ movie.Year }}</h6>
-            <p class="card-text">Director: {{ movie.Director }}</p>
-            <p class="card-text">Genre: {{ movie.Genre }}</p>
-            <p class="card-text">IMDb Rating: {{ movie.imdbRating }}</p>
-        </div>
-    </div>
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ movie.Title }}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">{{ movie.Year }}</h6>
+    <p class="card-text">Director: {{ movie.Director }}</p>
+    <p class="card-text">Genre: {{ movie.Genre }}</p>
+    <p class="card-text">IMDb Rating: {{ movie.imdbRating }}</p>
+  </div>
+</div>
 {% empty %}
-    <p>No recommendations available at the moment.</p>
-{% endfor %}
-{% endblock %}
+<p>No recommendations available at the moment.</p>
+{% endfor %} {% endblock %}

@@ -3,6 +3,8 @@ from django.contrib.auth import views as auth_views
 from . import views
 from .views import search_movie, review_list
 from .views import ReviewCreateView
+from .views import user_profile, edit_user_profile
+
 
 
 urlpatterns = [
@@ -13,6 +15,7 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='login.html', redirect_authenticated_user=True, next_page='user-profile'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='logout.html', next_page='home'), name='logout'),
     path('user-profile/', views.user_profile, name='user-profile'),
+    path('user-profile/edit/', edit_user_profile, name='profile-edit'),  # Edit profile URL
     path('reviews/', views.ReviewListView.as_view(), name='review-list'),
     path('reviews/<int:pk>/', views.ReviewDetailView.as_view(), name='review-detail'),
     path('reviews/new/', views.ReviewCreateView.as_view(), name='review-create'),
