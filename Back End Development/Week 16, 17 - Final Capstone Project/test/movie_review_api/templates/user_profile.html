@@ -7,20 +7,8 @@
   <p>{{ user.userprofile.bio|default:"No bio available." }}</p>
 
   <h5>Favorite Genres:</h5>
-  <p>
-    {{ user.userprofile.favorite_genres|default:"No favorite genres specified."
-    }}
-  </p>
+  <p>{{ user.userprofile.favorite_genres|default:"No Bio"}}</p>
 </div>
-
-<!-- Message Display -->
-{% if messages %}
-<div class="alert alert-info mt-3">
-  {% for message in messages %}
-  <p>{{ message }}</p>
-  {% endfor %}
-</div>
-{% endif %}
 
 <!-- Link to Edit Profile -->
 <div class="mb-3">

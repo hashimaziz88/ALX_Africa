@@ -1,50 +1,96 @@
-<!-- # templates/review_detail.html -->
- 
-{% extends 'base.html' %}
-{% block content %}
-<img src="{{ review.poster_url }}" alt="{{ review.movie_title }} Poster" style="width: 100px">
-
-<h2>{{ review.movie_title }}</h2>
-<p><strong>Rating:</strong> {{ review.rating }}/5</p>
-<p><strong>Reviewed by:</strong> {{ review.user.username }}</p>
-<p><strong>Date:</strong> {{ review.created_date }}</p>
-<p>{{ review.review_content }}</p>
-
-<p>
-    <strong>Likes:</strong> {{ review.likes.count }}
-    {% if user.is_authenticated %}
-        <form action="{% url 'like-review' review.pk %}" method="post" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-outline-primary">
-                {% if user in review.likes.all %}Unlike{% else %}Like{% endif %}
-            </button>
-        </form>
-    {% endif %}
-</p>
-
-{% if user == review.user %}
-    <a href="{% url 'review-update' review.pk %}" class="btn btn-primary">Edit</a>
-    <a href="{% url 'review-delete' review.pk %}" class="btn btn-danger">Delete</a>
-{% endif %}
-
-<h3>Comments</h3>
-{% for comment in review.comments.all %}
-    <div class="card mb-2">
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card shadow-sm">
         <div class="card-body">
-            <p class="card-text">{{ comment.content }}</p>
-            <p class="card-text"><small class="text-muted">By {{ comment.user.username }} on {{ comment.created_date }}</small></p>
-        </div>
-    </div>
-{% empty %}
-    <p>No comments yet.</p>
-{% endfor %}
+          <div class="d-flex align-items-start mb-4">
+            <img
+              src="{{ review.poster_url }}"
+              alt="{{ review.movie_title }} Poster"
+              class="img-fluid rounded shadow-sm mr-3"
+              style="width: 120px; height: auto"
+            />
+            <div>
+              <h2>{{ review.movie_title }}</h2>
+              <p class="mb-0"><strong>Rating:</strong> {{ review.rating }}/5</p>
+              <p class="mb-0">
+                <strong>Reviewed by:</strong> {{ review.user.username }}
+              </p>
+              <p class="mb-0">
+                <strong>Date:</strong> {{ review.created_date }}
+              </p>
+            </div>
+          </div>
 
-{% if user.is_authenticated %}
-    <h4>Add a comment</h4>
-    <form method="post" action="{% url 'add-comment' review.pk %}">
-        {% csrf_token %}
-        {{ comment_form.as_p }}
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-{% endif %}
+          <p class="lead">{{ review.review_content }}</p>
+
+          <div class="mb-4">
+            <strong>Likes:</strong> {{ review.likes.count }}
+            <form
+              action="{% url 'like-review' review.pk %}"
+              method="post"
+              class="d-inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-primary btn-sm">
+                {% if user in review.likes.all %}Unlike{% else %}Like{% endif %}
+              </button>
+            </form>
+          </div>
+
+          {% if user == review.user %}
+          <div class="mb-4">
+            <a
+              href="{% url 'review-update' review.pk %}"
+              class="btn btn-outline-secondary btn-sm mr-2"
+              >Edit</a
+            >
+            <a
+              href="{% url 'review-delete' review.pk %}"
+              class="btn btn-outline-danger btn-sm"
+              >Delete</a
+            >
+          </div>
+          {% endif %}
+
+          <h3>Comments</h3>
+          <hr />
+          {% for comment in review.comments.all %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <p class="card-text">{{ comment.content }}</p>
+              <p class="card-text">
+                <small class="text-muted"
+                  >By {{ comment.user.username }} on {{ comment.created_date
+                  }}</small
+                >
+              </p>
+            </div>
+          </div>
+          {% empty %}
+          <p>No comments yet.</p>
+          {% endfor %} {% if user.is_authenticated %}
+          <div class="mt-4">
+            <h4>Add a Comment</h4>
+            <form method="post" action="{% url 'add-comment' review.pk %}">
+              {% csrf_token %}
+              <div class="form-group">
+                {{ comment_form.content.label_tag }} {{ comment_form.content }}
+                <small class="form-text text-muted"
+                  >Write your comment here</small
+                >
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">
+                Submit Comment
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
