@@ -36,15 +36,15 @@ def review_list(request):
     return render(request, 'review_list.html', context)
 
 def search_movie(request):
-    if 'title' in request.GET:
-        title = request.GET['title']
-        url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&s={title}&r=json"
+    query = request.GET.get('title')
+    movie_list = []
+    if query:
+        url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&s={query}"
         response = requests.get(url)
-        movies = response.json().get('Search', [])
-    else:
-        movies = []
-
-    return render(request, 'movie_search.html', {'movies': movies})
+        if response.status_code == 200:
+            movie_list = response.json().get('Search', [])
+    
+    return render(request, 'movie_search.html', {'movie_list': movie_list})
 
 def home(request):
     latest_reviews = Review.objects.order_by('-created_date')[:5]
@@ -96,6 +96,9 @@ from django.conf import settings
 import requests
 from django.urls import reverse_lazy
 
+from django.contrib import messages
+from django.shortcuts import redirect
+
 class ReviewCreateView(LoginRequiredMixin, CreateView):
     model = Review
     form_class = ReviewForm
@@ -104,8 +107,6 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Get movie title from query params
         movie_title = self.request.GET.get('movie_title')
 
         # Fetch movie details from OMDb
@@ -114,10 +115,22 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
             response = requests.get(url)
             if response.status_code == 200:
                 context['movie_details'] = response.json()
-                # Set the movie title in the form's initial data
                 context['form'].initial['movie_title'] = movie_title
         
         return context
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.movie_title = self.request.GET.get('movie_title')
+        return super().form_valid(form)
+
+    def get(self, request, *args, **kwargs):
+        movie_title = request.GET.get('movie_title')
+        if not movie_title:
+            messages.warning(request, 'Please search and select a movie before writing a review.')
+            return redirect('search-movie')  # Redirect to your search view
+        return super().get(request, *args, **kwargs)
+
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -128,7 +141,7 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         # Ensure that movie title is provided, otherwise redirect to search
         movie_title = request.GET.get('movie_title')
         if not movie_title:
-            return redirect('movie-search')  # Redirect to your search view
+            return redirect('search-movie')  # Redirect to your search view
         return super().get(request, *args, **kwargs)
 
 class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

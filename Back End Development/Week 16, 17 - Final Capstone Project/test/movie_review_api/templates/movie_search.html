@@ -1,22 +1,18 @@
+<!-- movie_search.html -->
 {% extends 'base.html' %} {% block content %}
-<h2>Movie Search Results</h2>
-{% for movie in movies %}
-<div class="card mb-3">
-  <div class="card-body">
-    <h5 class="card-title">{{ movie.Title }}</h5>
-    <p class="card-text"><strong>Year:</strong> {{ movie.Year }}</p>
-    <img
-      src="{{ movie.Poster }}"
-      alt="{{ movie.Title }} Poster"
-      style="width: 100px"
-    />
-    <a
-      href="{% url 'review-create' %}?movie_title={{ movie.Title }}"
-      class="btn btn-primary"
-      >Add Review</a
+<h2>Search for a Movie</h2>
+<form method="GET" action="{% url 'search-movie' %}">
+  <input type="text" name="title" placeholder="Enter movie title" required />
+  <button type="submit">Search</button>
+</form>
+{% if movie_list %}
+<ul>
+  {% for movie in movie_list %}
+  <li>
+    <a href="{% url 'review-create' %}?movie_title={{ movie.Title }}"
+      >{{ movie.Title }} ({{ movie.Year }})</a
     >
-  </div>
-</div>
-{% empty %}
-<p>No movies found.</p>
-{% endfor %} {% endblock %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %} {% endblock %}

@@ -25,8 +25,8 @@
     <p>{{ review.review_content }}</p>
     <p>
       <small
-        >Reviewed by {{ review.user.username }} on {{ review.created_date
-        }}</small
+        >Reviewed by {{ review.user.username }} on {{
+        review.created_date}}</small
       >
     </p>
     <a href="{% url 'review-detail' review.pk %}" class="btn btn-link"

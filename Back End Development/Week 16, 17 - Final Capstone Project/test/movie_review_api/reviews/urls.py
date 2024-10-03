@@ -21,6 +21,5 @@ urlpatterns = [
     path('reviews/<int:pk>/comment/', views.add_comment, name='add-comment'),
     path('reviews/<int:pk>/like/', views.like_review, name='like-review'),
     path('recommendations/', views.movie_recommendations, name='movie-recommendations'),
-    path('review/new/', ReviewCreateView.as_view(), name='review-create'),
 
 ]
