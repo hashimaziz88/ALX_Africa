@@ -1,11 +1,11 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+{% block content %}
 <div class="container mt-5">
   <h2 class="mb-4">
-    Reviews for {% if movie_title %}{{ movie_title }}{% else %}All
-    Movies{%endif%}
+    Reviews for {% if movie_title %}{{ movie_title }}{% else %}All Movies{% endif %}
   </h2>
 
-  <!-- Search Bar -->
+  <!-- Search and Sort Bar -->
   <form method="GET" action="{% url 'review-list' %}" class="mb-4">
     <div class="input-group">
       <input
@@ -13,17 +13,22 @@
         name="search"
         class="form-control"
         placeholder="Search reviews..."
-        aria-label="Search reviews"
-        value="{{ request.GET.search }}"
+        value="{{ search_query }}"
       />
       <div>
-        <button class="btn btn-primary" style="margin-left: 10px" type="submit">
-          Search
-        </button>
+        <button class="btn btn-primary" style="margin-left: 10px" type="submit">Search</button>
       </div>
     </div>
+  
+    <div class="mt-3">
+      <label for="sort">Sort by:</label>
+      <select id="sort" name="sort" class="form-select" onchange="this.form.submit()">
+        <option value="created_date" {% if sort_by == 'created_date' %}selected{% endif %}>Date</option>
+        <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Rating</option>
+      </select>
+    </div>
   </form>
-
+  
   <!-- Reviews List -->
   {% if reviews %}
   <div class="row">
@@ -66,8 +71,37 @@
     </div>
     {% endfor %}
   </div>
+  <!-- Pagination controls -->
+{% if reviews.has_other_pages %}
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    {% if reviews.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?movie_title={{ movie_title }}&search={{ search_query }}&sort={{ sort_by }}&page=1">First</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?movie_title={{ movie_title }}&search={{ search_query }}&sort={{ sort_by }}&page={{ reviews.previous_page_number }}">Previous</a>
+      </li>
+    {% endif %}
+    {% for num in reviews.paginator.page_range %}
+      <li class="page-item {% if reviews.number == num %}active{% endif %}">
+        <a class="page-link" href="?movie_title={{ movie_title }}&search={{ search_query }}&sort={{ sort_by }}&page={{ num }}">{{ num }}</a>
+      </li>
+    {% endfor %}
+    {% if reviews.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?movie_title={{ movie_title }}&search={{ search_query }}&sort={{ sort_by }}&page={{ reviews.next_page_number }}">Next</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?movie_title={{ movie_title }}&search={{ search_query }}&sort={{ sort_by }}&page={{ reviews.paginator.num_pages }}">Last</a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
   {% else %}
   <p>No reviews found for this movie.</p>
-  {% endif%}
+  {% endif %}
 </div>
 {% endblock %}

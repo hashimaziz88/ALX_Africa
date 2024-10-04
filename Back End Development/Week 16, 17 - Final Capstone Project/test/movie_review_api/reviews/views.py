@@ -30,26 +30,39 @@ from django.core.paginator import Paginator
 
 
 def review_list(request):
-    movie_title = request.GET.get('movie_title', '')  
+    movie_title = request.GET.get('movie_title', '')
     search_query = request.GET.get('search', '')
-
-    # Filter reviews by movie title and search query
+    sort_by = request.GET.get('sort', 'created_date')  # Default sorting by created date
+    
     reviews = Review.objects.all()
 
-    # If a movie title is provided, filter by it
+    # Filter reviews by movie title if provided
     if movie_title:
         reviews = reviews.filter(movie_title__icontains=movie_title)
 
-    # If a search query is provided, filter by both movie title and review content
+    # Search functionality for movie title and review content
     if search_query:
         reviews = reviews.filter(
             models.Q(movie_title__icontains=search_query) |  # Search in movie title
             models.Q(review_content__icontains=search_query)  # Search in review content
         )
 
+    # Sort the reviews based on the selected criteria
+    if sort_by == 'rating':
+        reviews = reviews.order_by('-rating')  # Sort by rating (highest first)
+    else:
+        reviews = reviews.order_by('-created_date')  # Default sort by created date (most recent first)
+
+    # Implement pagination
+    paginator = Paginator(reviews, 10)  # Show 10 reviews per page
+    page_number = request.GET.get('page', 1)  # Get the current page number from the request
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'movie_title': movie_title,
-        'reviews': reviews,
+        'search_query': search_query,
+        'sort_by': sort_by,
+        'reviews': page_obj,
     }
     return render(request, 'review_list.html', context)
 
