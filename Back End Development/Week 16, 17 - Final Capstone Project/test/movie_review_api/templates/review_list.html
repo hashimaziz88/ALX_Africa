@@ -16,7 +16,11 @@
         aria-label="Search reviews"
         value="{{ request.GET.search }}"
       />
-      <button class="btn btn-primary" type="submit">Search</button>
+      <div>
+        <button class="btn btn-primary" style="margin-left: 10px" type="submit">
+          Search
+        </button>
+      </div>
     </div>
   </form>
 
@@ -25,22 +29,38 @@
   <div class="row">
     {% for review in reviews %}
     <div class="col-md-6 mb-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <img
-            src="{{ review.poster_url }}"
-            alt="{{ review.movie_title }} Poster"
-            style="width: 100px"
-          />
-          <h5 class="card-title">{{ review.movie_title }}</h5>
-          <p><strong>Rating:</strong> {{ review.rating }}/5</p>
+      <div class="card h-100 shadow-sm">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex align-items-center mb-3">
+            <img
+              src="{{ review.poster_url }}"
+              alt="{{ review.movie_title }} Poster"
+              style="width: 100px; height: auto; object-fit: cover"
+              class="me-3"
+            />
+            <div>
+              <h5 class="card-title mb-1">{{ review.movie_title }}</h5>
+              <div class="text-warning mb-2">
+                <!-- Displaying Star Ratings -->
+                {% for star in "12345" %} {% if star|add:0 <= review.rating %}
+                <i class="fas fa-star"></i>
+                {% else %}
+                <i class="far fa-star"></i>
+                {% endif %} {% endfor %}
+              </div>
+              <p><strong>Rating:</strong> {{ review.rating }}/5</p>
+            </div>
+          </div>
           <p>{{ review.review_content }}</p>
           <p class="text-muted">
-            Reviewed by {{ review.user.username }} on {{ review.created_date}}
+            Reviewed by {{ review.user.username }} on {{ review.created_date }}
           </p>
-          <a href="{% url 'review-detail' review.pk %}" class="btn btn-primary"
-            >View Details</a
+          <a
+            href="{% url 'review-detail' review.pk %}"
+            class="btn btn-primary mt-auto"
           >
+            View Details
+          </a>
         </div>
       </div>
     </div>
@@ -48,6 +68,6 @@
   </div>
   {% else %}
   <p>No reviews found for this movie.</p>
-  {% endif %}
+  {% endif%}
 </div>
 {% endblock %}

@@ -139,6 +139,7 @@ from django.contrib import messages
 import requests
 from django.conf import settings
 
+
 class ReviewCreateView(LoginRequiredMixin, CreateView):
     model = Review
     form_class = ReviewForm
@@ -149,7 +150,6 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         movie_title = self.request.GET.get('movie_title')
 
-        # Fetch movie details from OMDb
         if movie_title:
             url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&t={movie_title}"
             response = requests.get(url)
@@ -157,8 +157,7 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
                 movie_details = response.json()
                 context['movie_details'] = movie_details
                 context['form'].initial['movie_title'] = movie_title
-                # Set the initial poster_url in the form
-                context['form'].initial['poster_url'] = movie_details.get('Poster')  # Pass the poster URL
+                context['form'].initial['poster_url'] = movie_details.get('Poster')
         
         return context
 
@@ -166,25 +165,23 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         form.instance.movie_title = self.request.GET.get('movie_title')
 
-        # Fetch movie details again to save poster_url
         movie_title = form.instance.movie_title
         if movie_title:
             url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&t={movie_title}"
             response = requests.get(url)
             if response.status_code == 200:
                 movie_details = response.json()
-                form.instance.poster_url = movie_details.get('Poster')  # Save the poster URL
+                form.instance.poster_url = movie_details.get('Poster')
         
+        messages.success(self.request, 'Your review has been created successfully!')
         return super().form_valid(form)
 
     def get(self, request, *args, **kwargs):
-        # Ensure that movie title is provided, otherwise redirect to search
         movie_title = request.GET.get('movie_title')
         if not movie_title:
             messages.warning(request, 'Please search and select a movie before writing a review.')
-            return redirect('search-movie')  # Redirect to your search view
+            return redirect('search-movie')
         return super().get(request, *args, **kwargs)
-
 
 class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Review
@@ -195,6 +192,19 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         review = self.get_object()
         return self.request.user == review.user
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Your review has been updated successfully!')
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['movie_details'] = {
+            'Title': self.object.movie_title,
+            'Poster': self.object.poster_url,
+            'Year': self.object.created_date.year  # You might want to store the movie year separately
+        }
+        return context
 
 class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Review

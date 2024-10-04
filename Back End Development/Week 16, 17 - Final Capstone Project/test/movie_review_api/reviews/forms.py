@@ -12,6 +12,11 @@ class ReviewForm(forms.ModelForm):
             'movie_title': forms.TextInput(attrs={'readonly': 'readonly'}),  # Make it read-only to prevent manual editing
             'poster_url': forms.HiddenInput(),
         }
+        def clean_rating(self):
+            rating = self.cleaned_data.get('rating')
+            if not rating:
+                raise forms.ValidationError('You must select a rating.')
+            return rating
 
 class CommentForm(forms.ModelForm):
     class Meta:

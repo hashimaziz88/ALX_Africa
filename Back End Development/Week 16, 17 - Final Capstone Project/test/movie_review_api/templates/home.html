@@ -45,69 +45,78 @@ API{%endblock%} {% block content %}
           aria-label="Search reviews"
           value="{{ request.GET.search }}"
         />
-        <button class="btn btn-primary" type="submit">Search</button>
+        <div>
+          <button
+            class="btn btn-primary"
+            style="margin-left: 10px"
+            type="submit"
+          >
+            Search
+          </button>
+        </div>
       </div>
     </form>
   </div>
+</div>
 
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
-    {% for review in latest_reviews %}
-    <div class="col">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex mb-3">
-            <img
-              src="{{ review.poster_url }}"
-              alt="{{ review.movie_title }} Poster"
-              class="img-fluid me-3"
-              style="width: 100px; height: 150px; object-fit: cover"
-            />
-            <div>
-              <h5 class="card-title mb-1">{{ review.movie_title }}</h5>
-              <div class="text-warning mb-2">
-                {% for i in review.rating|ljust:5 %} {% if i == '1' %}
-                <i class="fas fa-star"></i>
-                {% else %}
-                <i class="far fa-star"></i>
-                {% endif %} {% endfor %}
-              </div>
-              <p class="text-muted small">By {{ review.user.username }}</p>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+  {% for review in latest_reviews %}
+  <div class="col">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex mb-3">
+          <img
+            src="{{ review.poster_url }}"
+            alt="{{ review.movie_title }} Poster"
+            class="img-fluid me-3"
+            style="width: 100px; height: 150px; object-fit: cover"
+          />
+          <div>
+            <h5 class="card-title mb-1">{{ review.movie_title }}</h5>
+            <div class="text-warning mb-2">
+              <!-- Displaying Star Ratings -->
+              {% for star in "12345" %} {% if star|add:0 <= review.rating %}
+              <i class="fas fa-star"></i>
+              {% else %}
+              <i class="far fa-star"></i>
+              {% endif %} {% endfor %}
             </div>
+            <p class="text-muted small">By {{ review.user.username }}</p>
           </div>
-          <p class="card-text">{{ review.review_content|truncatewords:30 }}</p>
         </div>
-        <div class="card-footer bg-transparent border-top-0">
-          <a
-            href="{% url 'review-detail' review.pk %}"
-            class="btn btn-sm btn-outline-primary"
-          >
-            <i class="fas fa-book-open me-1"></i>Read more
-          </a>
-        </div>
+        <p class="card-text">{{ review.review_content|truncatewords:30 }}</p>
+      </div>
+      <div class="card-footer bg-transparent border-top-0">
+        <a
+          href="{% url 'review-detail' review.pk %}"
+          class="btn btn-sm btn-outline-primary"
+        >
+          <i class="fas fa-book-open me-1"></i>Read more
+        </a>
       </div>
     </div>
-    {% empty %}
-    <div class="col-12">
-      <p class="text-center fs-5">
-        No reviews available yet. Be the first to write one!
-      </p>
-    </div>
-    {% endfor %}
   </div>
-
-  {% if is_paginated %}
-  <div class="text-center">
-    <button class="btn btn-primary" id="load-more">
-      <i class="fas fa-sync-alt me-2"></i>Load More
-    </button>
+  {% empty %}
+  <div class="col-12">
+    <p class="text-center fs-5">
+      No reviews available yet. Be the first to write one!
+    </p>
   </div>
-  {% endif %}
-
-  <script>
-    document.getElementById("load-more").addEventListener("click", function () {
-      // Implement AJAX call to load more reviews
-      console.log("Load more reviews");
-    });
-  </script>
-  {% endblock %}
+  {% endfor %}
 </div>
+
+{% if is_paginated %}
+<div class="text-center">
+  <button class="btn btn-primary" id="load-more">
+    <i class="fas fa-sync-alt me-2"></i>Load More
+  </button>
+</div>
+{% endif %}
+
+<script>
+  document.getElementById("load-more").addEventListener("click", function () {
+    // Implement AJAX call to load more reviews
+    console.log("Load more reviews");
+  });
+</script>
+{% endblock %}

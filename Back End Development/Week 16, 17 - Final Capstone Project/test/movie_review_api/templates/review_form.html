@@ -1,16 +1,133 @@
-{% extends 'base.html' %}
-{% block content %}
-<h2>{% if form.instance.pk %}Edit Review{% else %}New Review{% endif %}</h2 %>
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">New Review</h2>
 
-{% if movie_details %}
-    <h3>Movie: {{ movie_details.Title }}</h3>
-    <p><strong>Year:</strong> {{ movie_details.Year }}</p>
-    <img src="{{ movie_details.Poster }}" alt="{{ movie_details.Title }} Poster" style="width: 100px">
-{% endif %}
+          <div class="d-flex align-items-center mb-4">
+            <img
+              src="{{ movie_details.Poster }}"
+              alt="{{ movie_details.Title }} Poster"
+              class="img-fluid rounded me-3"
+              style="width: 100px; height: auto"
+            />
+            <div>
+              <h3 class="mb-1">{{ movie_details.Title }}</h3>
+              <p class="text-muted mb-0">Year: {{ movie_details.Year }}</p>
+            </div>
+          </div>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+          <form method="post" id="review-form">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label
+                for="{{ form.movie_title.id_for_label }}"
+                class="form-label"
+                >Movie Title</label
+              >
+              {{ form.movie_title }}
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Rating</label>
+              <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5" /><label
+                  for="star5"
+                  title="5 stars"
+                ></label>
+                <input type="radio" id="star4" name="rating" value="4" /><label
+                  for="star4"
+                  title="4 stars"
+                ></label>
+                <input type="radio" id="star3" name="rating" value="3" /><label
+                  for="star3"
+                  title="3 stars"
+                ></label>
+                <input type="radio" id="star2" name="rating" value="2" /><label
+                  for="star2"
+                  title="2 stars"
+                ></label>
+                <input type="radio" id="star1" name="rating" value="1" /><label
+                  for="star1"
+                  title="1 star"
+                ></label>
+              </div>
+              <div
+                id="rating-warning"
+                class="text-danger mt-2"
+                style="display: none"
+              ></div>
+              <!-- Warning Message Placeholder -->
+            </div>
+            <div class="mb-3">
+              <label
+                for="{{ form.review_content.id_for_label }}"
+                class="form-label"
+                >Review Content</label
+              >
+              {{ form.review_content }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              Submit Review
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .star-rating input {
+    display: none;
+  }
+  .star-rating label {
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z" fill="white" stroke="black" stroke-width="0.5"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+  }
+  .star-rating label:hover,
+  .star-rating label:hover ~ label,
+  .star-rating input:checked ~ label {
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z" fill="yellow" stroke="orange" stroke-width="0.5"/></svg>');
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const starRating = document.querySelector(".star-rating");
+    const ratingInputs = document.querySelectorAll('input[name="rating"]');
+    const form = document.getElementById("review-form");
+    const ratingWarning = document.getElementById("rating-warning");
+
+    starRating.addEventListener("change", function (e) {
+      if (e.target.name === "rating") {
+        ratingWarning.style.display = "none"; // Hide warning when a rating is selected
+      }
+    });
+
+    form.addEventListener("submit", function (e) {
+      const isRatingSelected = Array.from(ratingInputs).some(
+        (input) => input.checked
+      );
+      if (!isRatingSelected) {
+        e.preventDefault(); // Prevent form submission
+        ratingWarning.textContent =
+          "Please select a rating before submitting the review.";
+        ratingWarning.style.display = "block"; // Show warning message
+      }
+    });
+  });
+</script>
+
 {% endblock %}
