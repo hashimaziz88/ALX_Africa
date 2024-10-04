@@ -1,52 +1,16 @@
-{% extends 'base.html' %} {% block content %}
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h2 class="text-center mb-4">
-            {% if form.instance.pk %}Edit Your Review{% else %}Write a New
-            Review{% endif %}
-          </h2>
+{% extends 'base.html' %}
+{% block content %}
+<h2>{% if form.instance.pk %}Edit Review{% else %}New Review{% endif %}</h2 %>
 
-          {% if movie_details %}
-          <div class="d-flex align-items-center mb-4">
-            <img
-              src="{{ movie_details.Poster }}"
-              alt="{{ movie_details.Title }} Poster"
-              class="img-fluid rounded shadow-sm mr-3"
-              style="width: 120px; height: auto"
-            />
-            <div>
-              <h4 class="mb-1">{{ movie_details.Title }}</h4>
-              <p class="mb-0">
-                <strong>Year:</strong> {{ movie_details.Year }}
-              </p>
-            </div>
-          </div>
-          {% endif %}
+{% if movie_details %}
+    <h3>Movie: {{ movie_details.Title }}</h3>
+    <p><strong>Year:</strong> {{ movie_details.Year }}</p>
+    <img src="{{ movie_details.Poster }}" alt="{{ movie_details.Title }} Poster" style="width: 100px">
+{% endif %}
 
-          <form method="post">
-            {% csrf_token %}
-            <div class="form-group">
-              {{ form.rating.label_tag }} {{ form.rating }}
-              <small class="form-text text-muted"
-                >Rate the movie from 1 to 5</small
-              >
-            </div>
-            <div class="form-group">
-              {{ form.review_content.label_tag }} {{ form.review_content }}
-              <small class="form-text text-muted"
-                >Share your thoughts about the movie</small
-              >
-            </div>
-            <button type="submit" class="btn btn-success btn-block">
-              Submit Review
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
 {% endblock %}
