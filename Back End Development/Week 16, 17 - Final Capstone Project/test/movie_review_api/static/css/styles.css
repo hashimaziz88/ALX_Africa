@@ -164,6 +164,7 @@ h3,
 h4,
 h5,
 h6 {
+  font-weight: bold;
   color: #343a40;
   margin-bottom: 20px;
 }

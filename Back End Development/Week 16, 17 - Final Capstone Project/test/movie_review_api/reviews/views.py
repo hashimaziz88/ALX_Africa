@@ -328,6 +328,10 @@ def get_movie_info(title):
         print(f"Error fetching movie info for {title}: {e}")
         return None
 
+from django.db.models import Avg
+from django.contrib.auth.decorators import login_required
+import random
+
 @login_required
 def movie_recommendations(request):
     """
@@ -341,6 +345,8 @@ def movie_recommendations(request):
     recommended_movies = Review.objects.filter(
         rating__gte=4,
         movie_title__in=[review.movie_title for review in user_reviews]
+    ).exclude(
+        movie_title__in=[review.movie_title for review in user_reviews]  # Exclude already reviewed movies
     ).values('movie_title').annotate(avg_rating=Avg('rating')).order_by('-avg_rating')[:6]
 
     movies_with_info = []
@@ -372,6 +378,7 @@ def get_random_movies(count):
             movies_with_info.append(movie_info)
     
     return movies_with_info
+
 
 @login_required
 def edit_user_profile(request):

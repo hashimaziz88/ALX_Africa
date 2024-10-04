@@ -37,6 +37,8 @@
             Rating: {{ review.rating }}/5
           </h6>
           <p class="card-text mt-3">
+            <h6 class="card-subtitle mb-2">Review:</h6>
+
             {{ review.review_content|truncatewords:30 }}
           </p>
           <div class="mt-auto">
