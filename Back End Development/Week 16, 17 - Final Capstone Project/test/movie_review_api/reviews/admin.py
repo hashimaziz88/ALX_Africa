@@ -1,36 +1,50 @@
-# admin.py
-
 from django.contrib import admin
 from .models import Review, Comment, UserProfile
 
-# Admin for Review model
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('movie_title', 'user', 'rating', 'created_date', 'poster_url')  # Display relevant fields
-    search_fields = ('movie_title', 'user__username')  # Enable search by movie title and username
-    list_filter = ('rating', 'created_date')  # Enable filtering by rating and creation date
-    ordering = ('-created_date',)  # Order reviews by creation date (newest first)
+    """
+    Admin panel configuration for the Review model.
+    Displays movie title, user, rating, creation date, and poster URL.
+    Allows searching by movie title and user, filtering by rating and creation date,
+    and ordering by creation date (newest first).
+    """
+    list_display = ('movie_title', 'user', 'rating', 'created_date', 'poster_url')
+    search_fields = ('movie_title', 'user__username')
+    list_filter = ('rating', 'created_date')
+    ordering = ('-created_date',)
     
-    # Optional: Add inline comments if you want to see comments in the Review admin page
     class CommentInline(admin.TabularInline):
+        """
+        Inline configuration for displaying Comment model within the Review admin panel.
+        Displays user, content, and creation date, with read-only creation date.
+        """
         model = Comment
-        extra = 1  # Number of empty forms to display
+        extra = 1
         fields = ('user', 'content', 'created_date')
-        readonly_fields = ('created_date',)  # Make created date read-only
+        readonly_fields = ('created_date',)
 
-    inlines = [CommentInline]  # Display comments inline
+    inlines = [CommentInline]
 
-# Admin for Comment model
+
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('review', 'user', 'content', 'created_date')  # Display relevant fields
-    search_fields = ('review__movie_title', 'user__username')  # Enable search
-    list_filter = ('created_date',)  # Enable filtering by creation date
+    """
+    Admin panel configuration for the Comment model.
+    Displays review, user, content, and creation date.
+    Allows searching by review movie title and user, and filtering by creation date.
+    """
+    list_display = ('review', 'user', 'content', 'created_date')
+    search_fields = ('review__movie_title', 'user__username')
+    list_filter = ('created_date',)
 
-# Admin for UserProfile model
+
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'bio', 'favorite_genres')  # Display relevant fields
-    search_fields = ('user__username',)  # Enable search by username
-
-# You can register additional models similarly
+    """
+    Admin panel configuration for the UserProfile model.
+    Displays user, bio, and favorite genres.
+    Allows searching by username.
+    """
+    list_display = ('user', 'bio', 'favorite_genres')
+    search_fields = ('user__username',)

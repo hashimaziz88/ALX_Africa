@@ -1,101 +1,82 @@
-# reviews/views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
-from django.db.models import Avg
+from django.db.models import Avg, Q
+from django.core.paginator import Paginator
+from django.contrib import messages
+import random
+import requests
+from django.conf import settings
+
 from .models import Review, Comment, UserProfile
 from .forms import ReviewForm, CommentForm, UserProfileForm, CustomUserCreationForm
-import requests
-from django.conf import settings
-from django.shortcuts import render
-import requests
-from django.shortcuts import render
-from django.conf import settings
-from django.shortcuts import render
-from django.shortcuts import render
-from django.db import models  # For Q objects
-from .models import Review  # Assuming you have a Review model
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from .forms import UserProfileForm
-from .models import UserProfile
-from django.core.paginator import Paginator
-
-
-
 
 def review_list(request):
+    """
+    Display a list of reviews with optional filtering by movie title, search query, rating, and sorting. 
+    Supports pagination.
+    """
     movie_title = request.GET.get('movie_title', '')
     search_query = request.GET.get('search', '')
-    sort_by = request.GET.get('sort', 'created_date')  # Default sorting by created date
-    
+    sort_by = request.GET.get('sort', 'created_date_desc')
+    rating_filter = request.GET.get('rating', '')
+
     reviews = Review.objects.all()
 
-    # Filter reviews by movie title if provided
     if movie_title:
         reviews = reviews.filter(movie_title__icontains=movie_title)
 
-    # Search functionality for movie title and review content
     if search_query:
         reviews = reviews.filter(
-            models.Q(movie_title__icontains=search_query) |  # Search in movie title
-            models.Q(review_content__icontains=search_query)  # Search in review content
+            Q(movie_title__icontains=search_query) | Q(review_content__icontains=search_query)
         )
 
-    # Sort the reviews based on the selected criteria
-    if sort_by == 'rating':
-        reviews = reviews.order_by('-rating')  # Sort by rating (highest first)
-    else:
-        reviews = reviews.order_by('-created_date')  # Default sort by created date (most recent first)
+    if rating_filter:
+        rating_range = rating_filter.split('-')
+        if len(rating_range) == 2:
+            reviews = reviews.filter(rating__gte=rating_range[0], rating__lte=rating_range[1])
 
-    # Implement pagination
-    paginator = Paginator(reviews, 10)  # Show 10 reviews per page
-    page_number = request.GET.get('page', 1)  # Get the current page number from the request
+    if sort_by == 'rating':
+        reviews = reviews.order_by('-rating')
+    elif sort_by == 'created_date_asc':
+        reviews = reviews.order_by('created_date')
+    else:
+        reviews = reviews.order_by('-created_date')
+
+    paginator = Paginator(reviews, 10)
+    page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
     context = {
         'movie_title': movie_title,
         'search_query': search_query,
         'sort_by': sort_by,
+        'rating_filter': rating_filter,
         'reviews': page_obj,
     }
     return render(request, 'review_list.html', context)
 
-
-
-from django.core.paginator import Paginator
-from django.contrib import messages
-import requests
-from django.conf import settings
-from django.shortcuts import render
-
 def search_movie(request):
-    query = request.GET.get('title', '')  # Default to empty string
-    sort_by = request.GET.get('sort', 'title')  # Default sorting by title
+    """
+    Search for movies using the OMDb API. Supports sorting and pagination.
+    """
+    query = request.GET.get('title', '')
+    sort_by = request.GET.get('sort', 'title')
     movie_list = []
-    total_results = 0  # Initialize total_results to zero
+    total_results = 0
 
     if query:
         try:
-            # Construct the OMDb API URL with the search query
             url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&s={query}"
             response = requests.get(url)
-
-            # Check if the request was successful (status code 200)
             if response.status_code == 200:
                 data = response.json()
-
-                # Check if the API response contains a valid 'Search' result
                 if 'Search' in data:
-                    movie_list = data['Search']
-                    total_results = int(data.get('totalResults', 0))  # Get total results
-                    # Only keep a maximum of 30 results
-                    movie_list = movie_list[:30]
+                    movie_list = data['Search'][:30]
+                    total_results = int(data.get('totalResults', 0))
                 else:
                     messages.warning(request, "No movies found for your search query.")
             else:
@@ -103,45 +84,45 @@ def search_movie(request):
         except requests.exceptions.RequestException as e:
             messages.error(request, f"An error occurred: {e}")
 
-        # Sort the movie list based on the selected criteria
         if sort_by == 'title':
             movie_list = sorted(movie_list, key=lambda x: x['Title'])
         elif sort_by == 'year':
             movie_list = sorted(movie_list, key=lambda x: x['Year'])
         elif sort_by == 'reviews':
-            # Replace this with actual review counts
             movie_list = sorted(movie_list, key=lambda x: get_reviews_count(x['Title']), reverse=True)
 
-    # Implement pagination
-    paginator = Paginator(movie_list, 5)  # Show 5 movies per page
-    page_number = request.GET.get('page', 1)  # Get the current page number from the request
+    paginator = Paginator(movie_list, 5)
+    page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
-    # Check if the user has already reviewed any movies
     reviewed_movies = set(Review.objects.filter(user=request.user).values_list('movie_title', flat=True))
 
-    # Prepare the context to pass to the template
     context = {
         'movie_list': page_obj,
         'total_results': total_results,
         'query': query,
         'sort': sort_by,
-        'reviewed_movies': reviewed_movies,  # Add reviewed movies to context
+        'reviewed_movies': reviewed_movies,
     }
-    
     return render(request, 'movie_search.html', context)
 
-# Function to get reviews count for a movie (stub implementation)
 def get_reviews_count(movie_title):
-    # Implement the logic to get the reviews count for the movie
-    return 0  # Replace with actual count
-
+    """
+    Stub function to return the number of reviews for a movie.
+    """
+    return 0
 
 def home(request):
+    """
+    Display the homepage with the latest 6 reviews.
+    """
     latest_reviews = Review.objects.order_by('-created_date')[:6]
     return render(request, 'home.html', {'latest_reviews': latest_reviews})
 
 def register(request):
+    """
+    Handle user registration and profile creation.
+    """
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -155,31 +136,31 @@ def register(request):
 
 @login_required
 def user_profile(request):
-    # Get or create the user's profile
+    """
+    Display and allow updates to the user's profile. Supports pagination for user's reviews.
+    """
     profile, created = UserProfile.objects.get_or_create(user=request.user)
 
-    # Handle profile update form submission
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully.')
-            return redirect('user-profile')  # Redirect to the profile view
+            return redirect('user-profile')
     else:
         form = UserProfileForm(instance=profile)
     
-    # Fetch user's reviews
     reviews_list = Review.objects.filter(user=request.user)
-    
-    # Implement pagination for reviews
-    paginator = Paginator(reviews_list, 6)  # Show 5 reviews per page
-    page_number = request.GET.get('page', 1)  # Get the current page number from the request
+    paginator = Paginator(reviews_list, 6)
+    page_number = request.GET.get('page', 1)
     reviews = paginator.get_page(page_number)
 
-    # Pass the form and paginated reviews to the template
     return render(request, 'user_profile.html', {'form': form, 'reviews': reviews})
 
 class ReviewListView(ListView):
+    """
+    View to display a list of reviews with pagination.
+    """
     model = Review
     template_name = 'review_list.html'
     context_object_name = 'reviews'
@@ -187,6 +168,9 @@ class ReviewListView(ListView):
     paginate_by = 5
 
 class ReviewDetailView(DetailView):
+    """
+    View to display the details of a single review and its associated comments.
+    """
     model = Review
     template_name = 'review_detail.html'
 
@@ -195,20 +179,10 @@ class ReviewDetailView(DetailView):
         context['comment_form'] = CommentForm()
         return context
 
-from django.conf import settings
-import requests
-from django.urls import reverse_lazy
-
-from django.contrib import messages
-from django.shortcuts import redirect
-
-from django.shortcuts import redirect
-from django.contrib import messages
-import requests
-from django.conf import settings
-
-
 class ReviewCreateView(LoginRequiredMixin, CreateView):
+    """
+    View to create a new review. Retrieves movie details from OMDb API.
+    """
     model = Review
     form_class = ReviewForm
     template_name = 'review_form.html'
@@ -252,6 +226,9 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         return super().get(request, *args, **kwargs)
 
 class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    View to update an existing review. Only the author of the review can update it.
+    """
     model = Review
     form_class = ReviewForm
     template_name = 'review_form.html'
@@ -262,6 +239,8 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == review.user
 
     def form_valid(self, form):
+        if not form.instance.poster_url:
+            form.instance.poster_url = self.get_object().poster_url
         messages.success(self.request, 'Your review has been updated successfully!')
         return super().form_valid(form)
 
@@ -270,22 +249,31 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context['movie_details'] = {
             'Title': self.object.movie_title,
             'Poster': self.object.poster_url,
-            'Year': self.object.created_date.year  # You might want to store the movie year separately
+            'Year': self.object.created_date.year
         }
         return context
 
+
 class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    View for deleting a review. Only the review's author can delete it.
+    """
     model = Review
     template_name = 'reviews/review_confirm_delete.html'  # Ensures the correct template is used
     success_url = reverse_lazy('review-list')
 
     def test_func(self):
+        """
+        Check if the logged-in user is the author of the review.
+        """
         review = self.get_object()
         return self.request.user == review.user
 
-
 @login_required
 def add_comment(request, pk):
+    """
+    View for adding a comment to a review.
+    """
     review = get_object_or_404(Review, pk=pk)
     if request.method == 'POST':
         form = CommentForm(request.POST)
@@ -298,6 +286,9 @@ def add_comment(request, pk):
 
 @login_required
 def like_review(request, pk):
+    """
+    View for liking or unliking a review.
+    """
     review = get_object_or_404(Review, pk=pk)
     if request.user in review.likes.all():
         review.likes.remove(request.user)
@@ -306,6 +297,9 @@ def like_review(request, pk):
     return redirect('review-detail', pk=pk)
 
 def get_movie_info(title):
+    """
+    Fetch movie information from the OMDb API.
+    """
     url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&t={title}"
     response = requests.get(url)
     if response.status_code == 200:
@@ -314,25 +308,49 @@ def get_movie_info(title):
 
 @login_required
 def movie_recommendations(request):
+    """
+    Generate movie recommendations based on user's reviews and favorite genres.
+    If no recommendations are found, provide random movie suggestions.
+    """
     user_reviews = Review.objects.filter(user=request.user)
     favorite_genres = request.user.userprofile.favorite_genres.split(',')
-    
+
     # Get highly rated movies from user's favorite genres
     recommended_movies = Review.objects.filter(
         rating__gte=4,
         movie_title__in=[review.movie_title for review in user_reviews]
     ).values('movie_title').annotate(avg_rating=Avg('rating')).order_by('-avg_rating')[:6]
-    
+
     movies_with_info = []
     for movie in recommended_movies:
         movie_info = get_movie_info(movie['movie_title'])
         if movie_info:
             movies_with_info.append(movie_info)
-    
+
+    # If no recommendations, get random movies
+    if not movies_with_info:
+        movies_with_info = get_random_movies(3)
+
     return render(request, 'movie_recommendations.html', {'recommended_movies': movies_with_info})
+
+def get_random_movies(count):
+    """
+    Fetch random movies from a predefined list.
+    """
+    movie_list = ['Inception', 'The Matrix', 'Interstellar', 'The Dark Knight', 'Pulp Fiction', 'Forrest Gump']
+    random_movies = random.sample(movie_list, count)
+    movies_with_info = []
+    for movie_title in random_movies:
+        movie_info = get_movie_info(movie_title)
+        if movie_info:
+            movies_with_info.append(movie_info)
+    return movies_with_info
 
 @login_required
 def edit_user_profile(request):
+    """
+    View for editing the user's profile.
+    """
     user_profile = get_object_or_404(UserProfile, user=request.user)  # Get the user's profile
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=user_profile)
