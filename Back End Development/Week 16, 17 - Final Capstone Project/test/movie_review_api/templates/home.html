@@ -74,7 +74,6 @@ API{%endblock%} {% block content %}
           <div>
             <h5 class="card-title mb-1">{{ review.movie_title }}</h5>
             <div class="text-warning mb-2">
-              <!-- Displaying Star Ratings -->
               {% for star in "12345" %} {% if star|add:0 <= review.rating %}
               <i class="fas fa-star"></i>
               {% else %}
@@ -84,6 +83,7 @@ API{%endblock%} {% block content %}
             <p class="text-muted small">By {{ review.user.username }}</p>
           </div>
         </div>
+        <h6 class="card-subtitle mb-2">Review:</h6>
         <p class="card-text">{{ review.review_content|truncatewords:30 }}</p>
       </div>
       <div class="card-footer bg-transparent border-top-0">
@@ -115,8 +115,8 @@ API{%endblock%} {% block content %}
 
 <script>
   document.getElementById("load-more").addEventListener("click", function () {
-    // Implement AJAX call to load more reviews
     console.log("Load more reviews");
+    // Implement AJAX call to load more reviews
   });
 </script>
 {% endblock %}

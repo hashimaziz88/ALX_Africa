@@ -1,10 +1,10 @@
 /* Global Styles */
 body {
-  font-family: "Roboto", sans-serif; /* Modern, clean font */
-  font-size: 16px; /* Increase base font size for readability */
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
   line-height: 1.7;
   color: #333;
-  background-color: #f9f9f9; /* Soft background color for better contrast */
+  background-color: #f9f9f9;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -12,10 +12,10 @@ body {
 
 /* Navbar */
 .navbar {
-  background-color: #343a40; /* Dark, modern navbar */
+  background-color: #343a40;
   padding: 5px;
   margin-bottom: 30px;
-  border-bottom: 3px solid #007bff; /* Adds a colorful accent */
+  border-bottom: 3px solid #007bff;
 }
 
 .navbar a {
@@ -39,15 +39,15 @@ body {
 /* Card Styles */
 .card {
   background-color: #ffffff;
-  border-radius: 8px; /* Slightly rounded corners for modern design */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: transform 0.3s ease;
   margin-bottom: 20px;
 }
 
 .card:hover {
-  transform: scale(1.02); /* Slight zoom effect on hover */
+  transform: scale(1.02);
 }
 
 .card-body {
@@ -56,7 +56,7 @@ body {
 
 .card-title {
   font-size: 1.5rem;
-  color: #007bff; /* Accent color for titles */
+  color: #007bff;
   margin-bottom: 10px;
 }
 
@@ -78,7 +78,7 @@ body {
 }
 
 .btn:hover {
-  background-color: #0056b3; /* Darker shade for hover effect */
+  background-color: #0056b3;
 }
 
 .btn-link {
