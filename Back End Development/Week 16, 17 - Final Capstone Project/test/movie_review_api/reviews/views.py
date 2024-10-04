@@ -74,9 +74,8 @@ import requests
 from django.conf import settings
 from django.shortcuts import render
 
-
 def search_movie(request):
-    query = request.GET.get('title')
+    query = request.GET.get('title', '')  # Default to empty string
     sort_by = request.GET.get('sort', 'title')  # Default sorting by title
     movie_list = []
     total_results = 0  # Initialize total_results to zero
@@ -113,7 +112,24 @@ def search_movie(request):
             # Replace this with actual review counts
             movie_list = sorted(movie_list, key=lambda x: get_reviews_count(x['Title']), reverse=True)
 
-    return render(request, 'movie_search.html', {'movie_list': movie_list, 'total_results': total_results, 'query': query, 'sort': sort_by})
+    # Implement pagination
+    paginator = Paginator(movie_list, 5)  # Show 5 movies per page
+    page_number = request.GET.get('page', 1)  # Get the current page number from the request
+    page_obj = paginator.get_page(page_number)
+
+    # Check if the user has already reviewed any movies
+    reviewed_movies = set(Review.objects.filter(user=request.user).values_list('movie_title', flat=True))
+
+    # Prepare the context to pass to the template
+    context = {
+        'movie_list': page_obj,
+        'total_results': total_results,
+        'query': query,
+        'sort': sort_by,
+        'reviewed_movies': reviewed_movies,  # Add reviewed movies to context
+    }
+    
+    return render(request, 'movie_search.html', context)
 
 # Function to get reviews count for a movie (stub implementation)
 def get_reviews_count(movie_title):
@@ -122,7 +138,7 @@ def get_reviews_count(movie_title):
 
 
 def home(request):
-    latest_reviews = Review.objects.order_by('-created_date')[:5]
+    latest_reviews = Review.objects.order_by('-created_date')[:6]
     return render(request, 'home.html', {'latest_reviews': latest_reviews})
 
 def register(request):
@@ -139,16 +155,28 @@ def register(request):
 
 @login_required
 def user_profile(request):
+    # Get or create the user's profile
     profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    # Handle profile update form submission
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
-            return redirect('user-profile')
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('user-profile')  # Redirect to the profile view
     else:
         form = UserProfileForm(instance=profile)
     
-    reviews = Review.objects.filter(user=request.user)
+    # Fetch user's reviews
+    reviews_list = Review.objects.filter(user=request.user)
+    
+    # Implement pagination for reviews
+    paginator = Paginator(reviews_list, 6)  # Show 5 reviews per page
+    page_number = request.GET.get('page', 1)  # Get the current page number from the request
+    reviews = paginator.get_page(page_number)
+
+    # Pass the form and paginated reviews to the template
     return render(request, 'user_profile.html', {'form': form, 'reviews': reviews})
 
 class ReviewListView(ListView):
@@ -156,7 +184,7 @@ class ReviewListView(ListView):
     template_name = 'review_list.html'
     context_object_name = 'reviews'
     ordering = ['-created_date']
-    paginate_by = 10
+    paginate_by = 5
 
 class ReviewDetailView(DetailView):
     model = Review
@@ -293,7 +321,7 @@ def movie_recommendations(request):
     recommended_movies = Review.objects.filter(
         rating__gte=4,
         movie_title__in=[review.movie_title for review in user_reviews]
-    ).values('movie_title').annotate(avg_rating=Avg('rating')).order_by('-avg_rating')[:5]
+    ).values('movie_title').annotate(avg_rating=Avg('rating')).order_by('-avg_rating')[:6]
     
     movies_with_info = []
     for movie in recommended_movies:
@@ -305,7 +333,7 @@ def movie_recommendations(request):
 
 @login_required
 def edit_user_profile(request):
-    user_profile = UserProfile.objects.get(user=request.user)  # Get the user's profile
+    user_profile = get_object_or_404(UserProfile, user=request.user)  # Get the user's profile
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=user_profile)
         if form.is_valid():

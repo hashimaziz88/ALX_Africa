@@ -1,4 +1,4 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
 {% block content %}
 <div class="container mt-5">
   <h2 class="mb-4">Search for a Movie</h2>
@@ -43,14 +43,38 @@
         />
         <strong>{{ movie.Title }}</strong> ({{ movie.Year }})
       </div>
+      {% if movie.Title not in reviewed_movies %}
       <a
         href="{% url 'review-create' %}?movie_title={{ movie.Title }}"
         class="btn btn-primary btn-sm"
-        >Add Review</a
-      >
+      >Add Review</a>
+      {% endif %}
     </li>
     {% endfor %}
   </ul>
+
+  <!-- Pagination controls -->
+  {% if movie_list.has_other_pages %}
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      {% if movie_list.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?title={{ query }}&sort={{ sort }}&page={{ movie_list.previous_page_number }}">Previous</a>
+        </li>
+      {% endif %}
+      {% for num in movie_list.paginator.page_range %}
+        <li class="page-item {% if movie_list.number == num %}active{% endif %}">
+          <a class="page-link" href="?title={{ query }}&sort={{ sort }}&page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      {% if movie_list.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?title={{ query }}&sort={{ sort }}&page={{ movie_list.next_page_number }}">Next</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
   {% else %}
   <p>No movies found. Please try a different title.</p>
   {% endif %}

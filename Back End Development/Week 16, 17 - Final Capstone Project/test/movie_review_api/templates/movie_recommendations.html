@@ -1,16 +1,35 @@
-<!-- # templates/movie_recommendations.html -->
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %}
+
+{% block content %}
 <h2>Movie Recommendations</h2>
-{% for movie in recommended_movies %}
-<div class="card mb-3">
-  <div class="card-body">
-    <h5 class="card-title">{{ movie.Title }}</h5>
-    <h6 class="card-subtitle mb-2 text-muted">{{ movie.Year }}</h6>
-    <p class="card-text">Director: {{ movie.Director }}</p>
-    <p class="card-text">Genre: {{ movie.Genre }}</p>
-    <p class="card-text">IMDb Rating: {{ movie.imdbRating }}</p>
+
+<!-- Sorting and Filtering Options -->
+<form method="GET" action="{% url 'movie-recommendations' %}" class="mb-3">
+  <label for="sort">Sort by:</label>
+  <select id="sort" name="sort" class="form-select" onchange="this.form.submit()">
+    <option value="rating" {% if sort == 'rating' %}selected{% endif %}>IMDb Rating</option>
+    <option value="year" {% if sort == 'year' %}selected{% endif %}>Year</option>
+    <option value="title" {% if sort == 'title' %}selected{% endif %}>Title</option>
+  </select>
+</form>
+
+<div class="row">
+  {% for movie in recommended_movies %}
+  <div class="col-md-4 mb-3">
+    <div class="card h-100">
+      <img src="{{ movie.Poster }}" alt="{{ movie.Title }} Poster" class="card-img-top" style="width: 100%; height: auto;">
+      <div class="card-body">
+        <h5 class="card-title">{{ movie.Title }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">{{ movie.Year }}</h6>
+        <p class="card-text">Director: {{ movie.Director }}</p>
+        <p class="card-text">Genre: {{ movie.Genre }}</p>
+        <p class="card-text">IMDb Rating: {{ movie.imdbRating }}</p>
+        <a href="{% url 'review-create' %}?movie_title={{ movie.Title }}" class="btn btn-primary">Add Review</a>
+      </div>
+    </div>
   </div>
+  {% empty %}
+  <p>No recommendations available at the moment.</p>
+  {% endfor %}
 </div>
-{% empty %}
-<p>No recommendations available at the moment.</p>
-{% endfor %} {% endblock %}
+{% endblock %}
