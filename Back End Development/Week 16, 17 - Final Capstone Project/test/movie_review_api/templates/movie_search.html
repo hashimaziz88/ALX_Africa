@@ -1,45 +1,58 @@
-{% extends 'base.html' %} {% block content %}
-<h2>Search for a Movie</h2>
+{% extends 'base.html' %} 
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Search for a Movie</h2>
 
-<form method="GET" action="{% url 'search-movie' %}">
-  <div class="input-group mb-3">
-    <input
-      type="text"
-      name="title"
-      class="form-control"
-      placeholder="Enter movie title"
-      required
-    />
-    <div>
-      <button class="btn btn-primary" style="margin-left: 10px" type="submit">
-        Search
-      </button>
-    </div>
-  </div>
-</form>
-
-{% if movie_list %}
-<h3>Search Results ({{ movie_list|length }})</h3>
-<ul class="list-group">
-  {% for movie in movie_list %}
-  <li class="list-group-item d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center">
-      <img
-        src="{{ movie.Poster }}"
-        alt="{{ movie.Title }} Poster"
-        style="width: 50px; height: auto"
-        class="me-2"
+  <form method="GET" action="{% url 'search-movie' %}" class="mb-4">
+    <div class="input-group">
+      <input
+        type="text"
+        name="title"
+        class="form-control"
+        placeholder="Enter movie title"
+        required
+        value="{{ query }}"
       />
-      <strong>{{ movie.Title }}</strong> ({{ movie.Year }})
+      <div>
+        <button class="btn btn-primary" type="submit">Search</button>
+      </div>
     </div>
-    <a
-      href="{% url 'review-create' %}?movie_title={{ movie.Title }}"
-      class="btn btn-primary btn-sm"
-      >Add Review</a
-    >
-  </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p>No movies found. Please try a different title.</p>
-{% endif %} {% endblock %}
+
+    <!-- Sorting options -->
+    <div class="mt-3">
+      <label for="sort">Sort by:</label>
+      <select id="sort" name="sort" class="form-select" onchange="this.form.submit()">
+        <option value="title" {% if sort == 'title' %}selected{% endif %}>Title</option>
+        <option value="year" {% if sort == 'year' %}selected{% endif %}>Year</option>
+        <option value="reviews" {% if sort == 'reviews' %}selected{% endif %}>Reviews</option>
+      </select>
+    </div>
+  </form>
+
+  {% if movie_list %}
+  <h3 class="mb-3">Search Results ({{ total_results }})</h3>
+  <ul class="list-group">
+    {% for movie in movie_list %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <img
+          src="{{ movie.Poster }}"
+          alt="{{ movie.Title }} Poster"
+          style="width: 50px; height: auto"
+          class="me-2 rounded"
+        />
+        <strong>{{ movie.Title }}</strong> ({{ movie.Year }})
+      </div>
+      <a
+        href="{% url 'review-create' %}?movie_title={{ movie.Title }}"
+        class="btn btn-primary btn-sm"
+        >Add Review</a
+      >
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No movies found. Please try a different title.</p>
+  {% endif %}
+</div>
+{% endblock %}

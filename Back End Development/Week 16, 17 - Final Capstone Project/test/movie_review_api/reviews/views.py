@@ -24,6 +24,8 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from .forms import UserProfileForm
 from .models import UserProfile
+from django.core.paginator import Paginator
+
 
 
 
@@ -52,34 +54,59 @@ def review_list(request):
     return render(request, 'review_list.html', context)
 
 
+
+from django.core.paginator import Paginator
+from django.contrib import messages
+import requests
+from django.conf import settings
+from django.shortcuts import render
+
+
 def search_movie(request):
     query = request.GET.get('title')
+    sort_by = request.GET.get('sort', 'title')  # Default sorting by title
     movie_list = []
-    
+    total_results = 0  # Initialize total_results to zero
+
     if query:
         try:
             # Construct the OMDb API URL with the search query
             url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&s={query}"
             response = requests.get(url)
-            
+
             # Check if the request was successful (status code 200)
             if response.status_code == 200:
                 data = response.json()
-                
+
                 # Check if the API response contains a valid 'Search' result
                 if 'Search' in data:
                     movie_list = data['Search']
+                    total_results = int(data.get('totalResults', 0))  # Get total results
+                    # Only keep a maximum of 30 results
+                    movie_list = movie_list[:30]
                 else:
-                    # If there's no 'Search' result, display an appropriate message
                     messages.warning(request, "No movies found for your search query.")
             else:
-                # Handle non-200 response codes from the OMDb API
                 messages.error(request, "Failed to fetch data from OMDb. Please try again later.")
         except requests.exceptions.RequestException as e:
-            # Handle network-related errors (e.g., connection issues)
             messages.error(request, f"An error occurred: {e}")
-    
-    return render(request, 'movie_search.html', {'movie_list': movie_list})
+
+        # Sort the movie list based on the selected criteria
+        if sort_by == 'title':
+            movie_list = sorted(movie_list, key=lambda x: x['Title'])
+        elif sort_by == 'year':
+            movie_list = sorted(movie_list, key=lambda x: x['Year'])
+        elif sort_by == 'reviews':
+            # Replace this with actual review counts
+            movie_list = sorted(movie_list, key=lambda x: get_reviews_count(x['Title']), reverse=True)
+
+    return render(request, 'movie_search.html', {'movie_list': movie_list, 'total_results': total_results, 'query': query, 'sort': sort_by})
+
+# Function to get reviews count for a movie (stub implementation)
+def get_reviews_count(movie_title):
+    # Implement the logic to get the reviews count for the movie
+    return 0  # Replace with actual count
+
 
 def home(request):
     latest_reviews = Review.objects.order_by('-created_date')[:5]
